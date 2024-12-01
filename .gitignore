@@ -1,0 +1,17 @@
+# Ignore the Unity temporary and build folders
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+
+# User-specific files
+.user
+.userprefs
+.unityproj
+.suo
+.swp
+.log
+
+# Mac OS X system files
+.DS_Store
