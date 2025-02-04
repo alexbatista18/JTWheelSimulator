@@ -1107,8 +1107,6 @@ public class Reporter : MonoBehaviour
 
 		if (GUILayout.Button(closeContent, barStyle, GUILayout.Width(size.x * 2), GUILayout.Height(size.y * 2))) {
 			show = false;
-			ReporterGUI gui = gameObject.GetComponent<ReporterGUI>();
-			DestroyImmediate(gui);
 
 			try {
 				gameObject.SendMessage("OnHideReporter");
@@ -1767,7 +1765,6 @@ public class Reporter : MonoBehaviour
 	{
 		show = true;
 		currentView = ReportView.Logs;
-		gameObject.AddComponent<ReporterGUI>();
 
 
 		try {
