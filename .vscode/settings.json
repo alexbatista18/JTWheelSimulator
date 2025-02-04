@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Joystick 3.sln"
+    "dotnet.defaultSolution": "JTWheelSimulator.sln"
 }

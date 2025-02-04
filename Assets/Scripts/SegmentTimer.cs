@@ -27,10 +27,6 @@ public class SegmentTimer : MonoBehaviour
         {
             resultTextMesh = timeObject.GetComponent<TextMesh>();
         }
-        else
-        {
-            Debug.LogError("Objeto 'Time Trecho' não encontrado.");
-        }
     }
 
     void OnTriggerEnter(Collider other)
