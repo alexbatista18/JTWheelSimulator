@@ -12,7 +12,7 @@
       "hash": "591c2282f190cec83c70f0005634adfa882ef7a6"
     },
     "com.unity.collab-proxy": {
-      "version": "2.3.1",
+      "version": "2.7.1",
       "depth": 0,
       "source": "registry",
       "dependencies": {},
@@ -102,13 +102,13 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.splines": {
-      "version": "2.5.2",
+      "version": "2.8.0",
       "depth": 0,
       "source": "registry",
       "dependencies": {
-        "com.unity.settings-manager": "1.0.3",
         "com.unity.mathematics": "1.2.1",
-        "com.unity.ugui": "1.0.0"
+        "com.unity.modules.imgui": "1.0.0",
+        "com.unity.settings-manager": "1.0.3"
       },
       "url": "https://packages.unity.com"
     },
@@ -134,7 +134,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.textmeshpro": {
-      "version": "3.0.6",
+      "version": "3.0.7",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -143,13 +143,13 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.timeline": {
-      "version": "1.7.6",
+      "version": "1.7.7",
       "depth": 0,
       "source": "registry",
       "dependencies": {
+        "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.director": "1.0.0",
         "com.unity.modules.animation": "1.0.0",
-        "com.unity.modules.audio": "1.0.0",
         "com.unity.modules.particlesystem": "1.0.0"
       },
       "url": "https://packages.unity.com"
@@ -164,7 +164,7 @@
       }
     },
     "com.unity.visualscripting": {
-      "version": "1.9.2",
+      "version": "1.9.4",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -188,9 +188,9 @@
       "depth": 1,
       "source": "registry",
       "dependencies": {
-        "com.unity.modules.subsystems": "1.0.0",
         "com.unity.modules.vr": "1.0.0",
         "com.unity.modules.xr": "1.0.0",
+        "com.unity.modules.subsystems": "1.0.0",
         "com.unity.xr.legacyinputhelpers": "2.1.7"
       },
       "url": "https://packages.unity.com"
