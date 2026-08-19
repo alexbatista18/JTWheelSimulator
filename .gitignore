@@ -4,6 +4,8 @@ Temp/
 Obj/
 Build/
 Builds/
+Logs/
+UserSettings/
 
 # User-specific files
 .user
@@ -12,6 +14,10 @@ Builds/
 .suo
 .swp
 .log
+
+# Build artifacts / signing keys - do not version
+*.apk
+*.keystore
 
 # Mac OS X system files
 .DS_Store

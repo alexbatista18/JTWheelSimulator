@@ -1,6 +1,10 @@
 # JTWheelSimulator — Simulador de Cadeira de Roda Motorizada
 
-Simulador em Unity de uma cadeira de rodas motorizada, desenvolvido para uso em pesquisa/reabilitação em educação física. O usuário navega por uma pista com barreiras laterais, controlando a cadeira por um joystick físico (conectado via porta serial ou Bluetooth), enquanto o sistema mede tempos por segmento, colisões e, em um dos modos, tempo de reação a estímulos visuais.
+Simulador em Unity de uma cadeira de rodas motorizada, desenvolvido para uso em pesquisa/reabilitação em educação física. O usuário navega por uma pista com barreiras laterais, controlando a cadeira por um joystick/módulo físico, enquanto o sistema mede tempos por segmento, colisões e, em um dos modos, tempo de reação a estímulos visuais.
+
+**Repositório:** https://github.com/alexbatista18/JTWheelSimulator
+
+> **Forma principal de uso do projeto:** o **APK Android conectado ao módulo da cadeira via Bluetooth Classic nativo** (ver [Conexão da cadeira / joystick físico](#conexão-da-cadeira--joystick-físico)). O modo Editor/PC por porta serial existe apenas como alternativa para testes de desenvolvimento sem o app instalado no celular.
 
 > Empresa/produto (conforme `ProjectSettings/ProjectSettings.asset`): **InnovaDTA** — **Simulador CRM** (`com.InnovaDTA.SimuladorCRM`).
 
@@ -34,7 +38,7 @@ Simulador em Unity de uma cadeira de rodas motorizada, desenvolvido para uso em 
 
 1. Clone o repositório:
    ```bash
-   git clone <url-do-repositorio>
+   git clone https://github.com/alexbatista18/JTWheelSimulator.git
    ```
 2. Abra o **Unity Hub** → **Add project from disk** → selecione a pasta clonada.
 3. Se o Unity Hub não tiver a versão `2022.3.22f1` instalada, ele vai oferecer para instalar automaticamente ao tentar abrir o projeto. Aceite a instalação dessa versão específica.
@@ -90,9 +94,31 @@ Documentação detalhada dos estímulos visuais e sonoros: [`docs/estimulos-visu
 
 O projeto suporta **dois modos de conexão distintos**, dependendo de onde o simulador está rodando. **Não existe conexão por IP/rede** — a comunicação é feita por **Bluetooth Classic (RFCOMM)** ou por **porta serial (COM)**, não por TCP/IP.
 
-### 1. Modo Editor / PC — Porta Serial (COM)
+### 1. Modo Android (APK) — Bluetooth Classic nativo ⭐ (forma principal de uso)
 
-Usado pelo script `WheelchairControllerUSB.cs` (o nome menciona "USB", mas na prática ele lê uma porta serial — seja um adaptador USB-serial real, seja uma porta COM virtual criada por um módulo Bluetooth SPP pareado no Windows).
+Este é o modo usado no dia a dia do projeto: o **APK instalado no celular Android conecta ao módulo Bluetooth da cadeira** e recebe os comandos de movimento diretamente dele. É implementado pelos scripts `WheelchairControllerBluetooth.cs` + `BluetoothManager.cs`, via plugin Android nativo `Assets/Plugins/Android/unity3dbluetoothplugin-release.aar` (pacote Java `com.example.unity3dbluetoothplugin.BluetoothConnector`).
+
+**Como funciona:**
+1. Ao iniciar, o app solicita as permissões de runtime necessárias (ver abaixo) e chama `BluetoothConnector.StartConnection(deviceMAC)` para abrir a conexão RFCOMM com o módulo Bluetooth já pareado no celular.
+2. O módulo envia continuamente dados de eixo no formato de texto `"x,y"`, recebidos via `ReadData(string data)` e repassados para `WheelchairControllerBluetooth.ProcessBluetoothData(data)`.
+3. O script calcula a posição do eixo em torno de um valor central (`baselineX = 1550`) e usa faixas de tolerância (`baselineX - 300` / `baselineX + 200`) para decidir se o comando é frente, trás, esquerda ou direita.
+4. Há suporte a inversão de eixo (`SetInvertMovement`), útil para adaptar a orientação física do módulo instalado na cadeira.
+
+**Pontos de configuração importantes:**
+
+- **Endereço MAC do módulo Bluetooth da cadeira está hardcoded** em `BluetoothManager.cs`:
+  ```csharp
+  private readonly string deviceMAC = "10:52:1C:5D:F8:26";
+  ```
+  **Sempre que o módulo Bluetooth físico da cadeira for trocado (ex: em outra unidade/hardware), esse MAC precisa ser atualizado no código-fonte e um novo APK precisa ser gerado** — não há tela de pareamento/configuração dinâmica no app hoje. É o ajuste mais comum ao levar o projeto para uma nova cadeira física.
+- O módulo Bluetooth já deve estar **pareado previamente nas configurações do Android** (Bluetooth do sistema) antes de abrir o app — o app conecta a um dispositivo já pareado, não faz a descoberta/pareamento inicial.
+- Permissões solicitadas em runtime pelo app: `CoarseLocation`, `FineLocation`, `BLUETOOTH_ADMIN`, `BLUETOOTH`, `BLUETOOTH_SCAN`, `BLUETOOTH_ADVERTISE`, `BLUETOOTH_CONNECT`.
+  > ⚠️ Essas permissões **não estão declaradas** em `Assets/Plugins/Android/AndroidManifest.xml`. Confirme que o manifest final do build as inclui (via merge do plugin ou manualmente), senão a solicitação de permissão pode falhar silenciosamente no APK gerado — o sintoma prático é o app não conseguir conectar mesmo com o módulo pareado.
+- Timeout de tentativa de conexão: **5 segundos** — se o módulo não responder nesse prazo, a conexão falha e deve ser tentada novamente.
+
+### 2. Modo Editor / PC — Porta Serial (COM)
+
+Modo auxiliar, usado apenas durante o desenvolvimento no Editor Unity, **sem precisar gerar um APK a cada teste**. Implementado pelo script `WheelchairControllerUSB.cs` (o nome menciona "USB", mas na prática ele lê uma porta serial — seja um adaptador USB-serial real, seja uma porta COM virtual criada por um módulo Bluetooth SPP pareado no Windows).
 
 Parâmetros configuráveis no Inspector do componente:
 
@@ -101,21 +127,7 @@ Parâmetros configuráveis no Inspector do componente:
 | `portName` | `COM6` | Porta serial do dispositivo. **Deve ser ajustada** para a porta em que o joystick/módulo aparece no seu PC (verifique em *Gerenciador de Dispositivos > Portas (COM & LPT)*). |
 | `baudRate` | `9600` | Velocidade de transmissão — deve ser igual à configurada no firmware do dispositivo. |
 
-O dispositivo deve enviar dados no formato de texto `"x,y"` (dois inteiros separados por vírgula), lidos a cada frame e processados por `ProcessBluetoothData(string data)`.
-
-### 2. Modo Android (APK) — Bluetooth Classic nativo
-
-Usado pelos scripts `WheelchairControllerBluetooth.cs` + `BluetoothManager.cs`, via plugin Android nativo `Assets/Plugins/Android/unity3dbluetoothplugin-release.aar`.
-
-- **Endereço MAC do módulo Bluetooth da cadeira está hardcoded** em `BluetoothManager.cs`:
-  ```csharp
-  private readonly string deviceMAC = "10:52:1C:5D:F8:26";
-  ```
-  **Se o módulo Bluetooth físico da cadeira for trocado, esse MAC precisa ser atualizado no código** (não há tela de configuração/pareamento dinâmico no app atualmente).
-- Permissões solicitadas em runtime pelo app: `CoarseLocation`, `FineLocation`, `BLUETOOTH_ADMIN`, `BLUETOOTH`, `BLUETOOTH_SCAN`, `BLUETOOTH_ADVERTISE`, `BLUETOOTH_CONNECT`.
-  > ⚠️ Essas permissões **não estão declaradas** em `Assets/Plugins/Android/AndroidManifest.xml`. Confirme que o manifest final do build as inclui (via merge do plugin ou manualmente), senão a solicitação de permissão pode falhar silenciosamente no APK gerado.
-- Timeout de tentativa de conexão: **5 segundos**.
-- Mesmo formato de dados do modo serial: string `"x,y"`, com baseline `baselineX = 1550` e limites `baselineX ± 300/200` para decidir frente/trás/esquerda/direita. Suporta inversão de eixo via `SetInvertMovement`.
+O dispositivo deve enviar dados no mesmo formato de texto `"x,y"` usado no modo Android, lidos a cada frame e processados por `ProcessBluetoothData(string data)`.
 
 ---
 
@@ -136,7 +148,7 @@ Passos para gerar o APK:
 
 1. **File > Build Settings** → confirme a plataforma **Android** selecionada (*Switch Platform* se necessário).
 2. Confirme as cenas incluídas na build (ver seção [Estrutura de cenas](#estrutura-de-cenas)).
-3. Em **Player Settings**, confirme o **Publishing Settings > Keystore**. O projeto usa um keystore local (`user.keystore`, ver [Pontos de atenção](#pontos-de-atenção-e-boas-práticas)) para assinar o APK.
+3. Em **Player Settings > Publishing Settings**, configure o keystore de assinatura do APK. **O keystore não faz mais parte do repositório** (ver [Pontos de atenção](#pontos-de-atenção-e-boas-práticas)) — cada desenvolvedor deve manter o seu localmente ou obtê-lo por um canal seguro (não pelo Git), fora do controle de versão.
 4. Clique em **Build** e escolha o destino do arquivo `.apk`.
 5. Instale no celular Android via `adb install caminho\para\o.apk` ou transferindo o arquivo diretamente.
 
@@ -158,15 +170,14 @@ O projeto inclui o **Google XR Cardboard Plugin** (`com.google.xr.cardboard`, ve
 
 ## Pontos de atenção e boas práticas
 
-Itens identificados no repositório atual que merecem cuidado de quem for trabalhar no projeto:
+Itens identificados no repositório que merecem cuidado de quem for trabalhar no projeto:
 
-- **`user.keystore` está versionado no Git.** É a chave de assinatura do APK Android — idealmente não deveria estar em um repositório versionado (ainda mais se o repositório for público). Considere migrar para uma variável de ambiente/keystore local por máquina e remover do histórico se necessário, avaliando com a equipe o impacto de reescrever o histórico.
-- **APKs compilados (`jstwheell.apk`, `Fase1.apk`) estão versionados no Git**, incluindo arquivos de dezenas de MB. Recomenda-se **não commitar binários de build** — usar Releases do GitHub ou outro storage para distribuir o APK, e adicionar `*.apk` ao `.gitignore`.
-- **`Logs/` e `UserSettings/` não estão no `.gitignore`** e aparecem versionados (logs de importação do Editor, layouts de janela). Esses arquivos são específicos de cada máquina/instalação e geram diffs desnecessários a cada commit — recomenda-se adicioná-los ao `.gitignore`.
-- **Os `.csproj`/`.sln` são regenerados automaticamente pelo Unity** a cada abertura do editor e também aparecem frequentemente modificados nos commits — normalmente não precisam ser versionados.
-- **O MAC address do módulo Bluetooth está hardcoded** em `BluetoothManager.cs` (ver seção de conexão) — ao trocar o hardware da cadeira, é necessário atualizar o código-fonte e gerar um novo build.
+- **⚠️ `user.keystore` (chave de assinatura do APK) já esteve versionado neste repositório público.** O arquivo foi removido do controle de versão e adicionado ao `.gitignore`, mas **ainda existe em commits antigos do histórico do Git** — ele deve ser considerado comprometido. Recomenda-se **gerar um novo keystore de assinatura** antes de qualquer publicação oficial do app (ex: Play Store), já que o antigo pode ter sido acessado por qualquer pessoa enquanto o repositório esteve público com ele versionado.
+- **Binários de build (`*.apk`) não são mais versionados no Git** (adicionados ao `.gitignore`). Para distribuir um APK, use **Releases do GitHub** ou outro storage — não faça commit do binário compilado.
+- **`Logs/` e `UserSettings/`** (arquivos específicos de cada máquina/instalação — logs de importação do Editor, layouts de janela) **foram removidos do controle de versão** e adicionados ao `.gitignore`.
+- **Os `.csproj`/`.sln` são regenerados automaticamente pelo Unity** a cada abertura do editor e ainda aparecem modificados a cada commit — permanecem versionados por conveniência, mas normalmente não precisam ser revisados manualmente.
+- **O MAC address do módulo Bluetooth está hardcoded** em `BluetoothManager.cs` (ver [Conexão da cadeira / joystick físico](#conexão-da-cadeira--joystick-físico)) — ao trocar o hardware da cadeira, é necessário atualizar o código-fonte e gerar um novo build.
 - **O nome do script `AuditorySignalController.cs` é enganoso**: apesar do nome sugerir estímulo sonoro, ele implementa apenas o estímulo **visual** de reação — o alarme sonoro real fica em `BarrierColorChange.cs`. Ver nota detalhada em [`docs/estimulos-visuais-sonoros.md`](docs/estimulos-visuais-sonoros.md).
-- Sugestão de entradas a adicionar ao `.gitignore`: `Logs/`, `UserSettings/`, `*.apk`, `*.keystore`, `[Oo]bj/`.
 
 ---
 
