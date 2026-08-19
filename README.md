@@ -10,8 +10,17 @@ Simulador em Unity de uma cadeira de rodas motorizada, desenvolvido para uso em 
 
 ---
 
+## Autoria
+
+Este projeto é de autoria do **IINN-ELS — Instituto Internacional de Neurociências de Natal Edmond e Lily Safra** (Natal/Macaíba-RN), instituição de pesquisa em neurociência fundada por Miguel Nicolelis, Sidarta Ribeiro e Claudio Mello.
+
+**Alex Batista** ([@alexbatista18](https://github.com/alexbatista18)) atua como **facilitador técnico** do repositório — não é o autor/pesquisador responsável pelo projeto. Para questões de pesquisa, acesso ao hardware físico da cadeira ou continuidade institucional do projeto, procurar **Edgard Morya** (coordenador de pesquisa no IINN-ELS).
+
+---
+
 ## Sumário
 
+- [Autoria](#autoria)
 - [Requisitos](#requisitos)
 - [Instalação do projeto no Unity](#instalação-do-projeto-no-unity)
 - [Estrutura de cenas](#estrutura-de-cenas)
@@ -183,7 +192,6 @@ Itens identificados no repositório que merecem cuidado de quem for trabalhar no
 
 ## Contato
 
-Dúvidas sobre o projeto:
-
-- **Telefone:** (69) 99369-7356
-- **E-mail:** dkalexbatista@gmail.com
+- **Facilitador (repositório/código):** Alex Batista — (69) 99369-7356 — dkalexbatista@gmail.com ([@alexbatista18](https://github.com/alexbatista18))
+- **Autoria/pesquisa:** IINN-ELS — Instituto Internacional de Neurociências de Natal Edmond e Lily Safra.
+- **Hardware** (cadeira instrumentada, módulo Bluetooth): disponível no IINN-ELS. Para mais informações, procurar **Edgard Morya**.
