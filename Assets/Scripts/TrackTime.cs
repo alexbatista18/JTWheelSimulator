@@ -107,6 +107,8 @@ public class TrackTime : MonoBehaviour
         }
     }
 
+    public bool IsTimingActive => isTiming;
+
     public void StartTimer()
     {
         startTime = Time.time;
